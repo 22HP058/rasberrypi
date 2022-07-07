@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-5+g@77x+i@q&w=qc-pwh0n6)vac2s=eis#rb%a8m^csw^vv*g8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.158.168' ]
+ALLOWED_HOSTS = ['192.168.158.168']
 
 
 # Application definition
@@ -75,8 +75,12 @@ WSGI_APPLICATION = 'raspiserver.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'tram',
+        'USER': 'root',
+        'PASSWORD':'pi',
+        'HOST':'localhost',
+        'PORT':'3306',
     }
 }
 
@@ -105,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
