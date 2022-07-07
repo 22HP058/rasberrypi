@@ -1,0 +1,1 @@
+ip 바뀔 시 setting.py 에 allowed-hosts 변경하기
