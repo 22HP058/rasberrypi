@@ -7,11 +7,6 @@ db = pymysql.connect(host='localhost',user='root',password='pi',
 db='tram',charset='utf8')
 
 
-#BLUETOOTH 
-client_socket=BluetoothSocket( RFCOMM )
-#client_socket.connect(("F8:B5:4D:46:50:E5", 1))#블루투스 연결 맥주소 넣어주기
-client_socket.connect(("98:D3:51:F9:28:13", 1))
-
 def sendQuery(all_data):
    data = all_data.split(",")
    fire = str(data[1])
@@ -30,6 +25,13 @@ def sendQuery(all_data):
    cur.execute(q)
 
    db.commit()
+
+
+
+#BLUETOOTH 
+client_socket=BluetoothSocket( RFCOMM )
+#client_socket.connect(("F8:B5:4D:46:50:E5", 1))#블루투스 연결 맥주소 넣어주기
+client_socket.connect(("98:D3:51:F9:28:13", 1))
 
 
 flag = -1

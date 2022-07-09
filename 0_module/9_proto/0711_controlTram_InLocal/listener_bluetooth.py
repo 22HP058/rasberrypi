@@ -1,8 +1,11 @@
 import threading as th
+from multiprocessing.connection import Listener
+
 
 from bluetooth import *
  
 
+#bluetooth
 #server ver
 server_socket= BluetoothSocket(RFCOMM)
 
@@ -11,13 +14,23 @@ server_socket.bind(("", port))
 server_socket.listen(100)
 
 client_socket, address = server_socket.accept()
-print("Accepted connection from ", address)
+print("bluetooth connection: ", address)
+
+
+#socket 
+address = ('localhost',6000)
+listener = Listener(address,authkey=b"pi")
+conn = listener.accept()
+
+print("socket connection:",listener.last_accepted)
+
 
 #bluetooth 값 쓰기
 def send():
     while True: 
-        msg = input("Send : ")
-        client_socket.send(msg)     
+        msg = conn.recv()
+        print(msg)
+        client_socket.send(str(msg))     
 
 #bluetooth 값 읽기
 def receive():
