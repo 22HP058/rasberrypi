@@ -33,6 +33,7 @@ def send():
         client_socket.send(str(msg))     
 
 #bluetooth 값 읽기
+#+tram database 삽입 
 def receive():
     while(True):
         bluetooth_data = client_socket.recv(1024)
