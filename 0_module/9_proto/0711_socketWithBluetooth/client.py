@@ -12,24 +12,26 @@ db='tram',charset='utf8')
 def parsingQuery(all_data):
     data = all_data.split(",")
 
+   #0821 DATABASE 변경
+    gas = str(data[0])
     fire = str(data[1])
-    temperature = str(data[2])
-    humidiity =  str(data[3])
-    air = str(data[0])
+    ultraSound = str(data[2])
+    person = str(data[3])
+    humidity =  str(data[4])
+    temperature = str(data[5])
 
-    result = {"fire":fire,"temperature":temperature,"humidity":humidiity,"air":air}
-
+    result = {"gas":gas,"fire":fire,"ultraSound":ultraSound,"person":person,"humidity":humidity,"temperature":temperature}
 
     return result
 
 def sendQuery(parsingData):
-   valuesList = ['NOW()','NOW()',parsingData["fire"],parsingData["temperature"],parsingData["air"]]
+   valuesList = ['NOW()','NOW()',parsingData["gas"],parsingData["fire"],parsingData["ultraSound"],parsingData["person"],parsingData["humidity"],parsingData["temperature"]]
    valuesStr = ",".join(valuesList)
    print("Query value:",valuesStr)
 
    cur = db.cursor()
 
-   q = "INSERT INTO sensor (date,time,fire,temperature,air) VALUES("+valuesStr+")"
+   q = "INSERT INTO sensor (date,time,gas,fire,ultraSound,person,humidity,temperature) VALUES("+valuesStr+")"
    print("Query:",q)
    cur.execute(q)
 
