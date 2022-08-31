@@ -15,12 +15,12 @@ while True:
     if(flag == 0):
         soft_pwm.ChangeDutyCycle(10)
         flag = 1 
-        print("0000000000000")
+        print("90도")
         time.sleep(1)
     if(flag == 1):
         soft_pwm.ChangeDutyCycle(5)
         flag = 0
-        print("11111111111111")
+        print("180도")
         time.sleep(1)
     
         
