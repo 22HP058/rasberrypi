@@ -12,17 +12,18 @@ import time
 
 '''----------------init----------------'''
 #socket
-'''
 address = ('localhost',6000)
 conn = Client(address,authkey=b"pi")
 
-print("connection",conn.last_accepted)
-'''
+
+
 
 
 #bluetooth
 client_socket=BluetoothSocket( RFCOMM )
 client_socket.connect(("98:D3:51:F9:28:13", 1))
+
+warning_value = {"gas": 400, "fire" : 400,"ultraSound": 500 ,"person": 1}
 
 
 #rfid
@@ -58,7 +59,7 @@ def sendQuery(parsingData):
    
    valuesList = ['NOW()','NOW()',parsingData["gas"],parsingData["fire"],parsingData["ultraSound"],parsingData["person"],parsingData["humidity"],parsingData["temperature"],str(station)]
    valuesStr = ",".join(valuesList)
-   print("Query value:",valuesStr)
+   #print("Query value:",valuesStr)
 
    cur = db.cursor()
 
@@ -85,22 +86,37 @@ def thread_bluetooth():
 
       for i in range(len(list_data)):
          if(list_data[i]=='s'):
-            print("start")
+            #print("start")
             flag = 1
 
          
 
          elif(list_data[i]=="f"):
-            print("finish")
             if(len(save_data)>0 and flag == 1):
+               print("<------sensor data SAVE DB------>")
                bluetooth_data = "".join(save_data)
                parsing_data = parsingQuery(bluetooth_data)
                print(parsing_data)
 
                sendQuery(parsing_data)
-               #control_1 : fire
-               #if(parsing_data["fire"]>1):
-               #   conn.send("firefire")
+
+               #gas, fire, ultraSound , person,trafficLight,obstacle
+               sendToTram = [0,0,0,0,0,0]
+               
+
+               print("<------trigger data TO raspi(tram)------>")
+               if(int(parsing_data["gas"]) > int(warning_value["gas"])):
+                  sendToTram[0] = 1
+               if(int(parsing_data["fire"]) < int(warning_value["fire"])):
+                  sendToTram[1] = 1
+               if(int(parsing_data["ultraSound"]) < int(warning_value["ultraSound"])):
+                  sendToTram[2] = 1
+               if(int(parsing_data["person"]) == int(warning_value["person"])):
+                  sendToTram[3] = 1
+               
+               print(sendToTram)
+               conn.send(sendToTram)
+
             flag = -1
             save_data = []
             parsing_data = []
