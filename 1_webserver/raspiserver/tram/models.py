@@ -139,4 +139,19 @@ class Sensor(models.Model):
         unique_together = (('date', 'time'),)
 
 
+class Tram(models.Model):
+    date = models.DateField()
+    time = models.TimeField()
+    rccandrive = models.IntegerField(db_column='rcCanDrive', blank=True, null=True)  # Field name made lowercase.
+    linesensor_l = models.IntegerField(db_column='lineSensor_L', blank=True, null=True)  # Field name made lowercase.
+    linesensor_r = models.IntegerField(db_column='lineSensor_R', blank=True, null=True)  # Field name made lowercase.
+    gastrigger = models.IntegerField(db_column='gasTrigger', blank=True, null=True)  # Field name made lowercase.
+    firetrigger = models.IntegerField(db_column='fireTrigger', blank=True, null=True)  # Field name made lowercase.
+    ultrasoundtrigger = models.IntegerField(db_column='ultraSoundTrigger', blank=True, null=True)  # Field name made lowercase.
+    persontrigger = models.IntegerField(db_column='personTrigger', blank=True, null=True)  # Field name made lowercase.
+    trafficlighttrigger = models.IntegerField(db_column='trafficLightTrigger', blank=True, null=True)  # Field name made lowercase.
+    obstacletrigger = models.IntegerField(db_column='obstacleTrigger', blank=True, null=True)  # Field name made lowercase.
 
+    class Meta:
+        managed = False
+        db_table = 'tram'
