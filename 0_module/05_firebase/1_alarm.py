@@ -1,6 +1,8 @@
 def listenerCallback(information):
     eventType = information.event_type
+    eventPath = information.path
     eventData = information.data
+    
 
     #제어 확인용
     '''
@@ -20,10 +22,10 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 
-cred = credentials.Certificate("//home//pi//rasberry//0_module//5_firebase//tram-e65c4-firebase-adminsdk-mguas-7696eca7e7.json")
+cred = credentials.Certificate("//home//pi//File//tram-e65c4-firebase-adminsdk-mguas-51f6bc11fd.json")
 firebase_admin.initialize_app(cred,{'databaseURL' : "https://tram-e65c4-default-rtdb.firebaseio.com//"})
 
-ref = db.reference()
+ref = db.reference("emergency/")
 ref.listen(listenerCallback)
 
 
