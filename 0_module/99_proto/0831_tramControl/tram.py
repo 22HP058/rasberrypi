@@ -74,7 +74,6 @@ def send():
 
 #bluetooth 값 읽기
 def receive():
-    print("<------tram data SAVE DB------>")
     flag = -1
     save_data = []
 
@@ -94,6 +93,7 @@ def receive():
             elif(list_data[i]=="f"):
                 #print("finish")
                 if(len(save_data)>0 and flag == 1):
+                    print("<------tram data SAVE DB------>")
                     bluetooth_data = "".join(save_data)
                     parsing_data = parsingQuery(bluetooth_data)
                     print(parsing_data)
