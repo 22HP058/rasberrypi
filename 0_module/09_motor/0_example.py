@@ -16,16 +16,10 @@ while True:
         soft_pwm.ChangeDutyCycle(10)
         flag = 1 
         print("90도")
-        time.sleep(1)
+        time.sleep(5)
     if(flag == 1):
         soft_pwm.ChangeDutyCycle(5)
         flag = 0
         print("180도")
-        time.sleep(1)
+        time.sleep(5)
     
-        
-    
-    
-
-soft_pwm.stop()
-GPIO.cleanup()
