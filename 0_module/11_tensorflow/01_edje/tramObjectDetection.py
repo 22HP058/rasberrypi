@@ -29,14 +29,14 @@ import collections
 #seb:use label check
 USELABEL = ["person","traffic light"]  
 #seb : color detection
-LOWER_RED = np.array([0, 100, 100])        # 빨강색 범위
-UPPER_RED = np.array([30, 255, 255])
+LOWER_RED = np.array([-10, 50, 50])        # 빨강색 범위
+UPPER_RED = np.array([10, 255, 255])
 
-LOWER_GREEN = np.array([30, 80, 80])        # 초록색 범위
-UPPER_GREEN = np.array([90, 255, 255])
+LOWER_GREEN = np.array([50, 80, 80])        # 초록색 범위
+UPPER_GREEN = np.array([70, 255, 255])
 
-LOWER_BLUE = np.array([100,100,100])          # 파랑색 범위
-UPPER_BLUE = np.array([150,255,255])
+LOWER_BLUE = np.array([110,100,100])          # 파랑색 범위
+UPPER_BLUE = np.array([130,255,255])
 
 
 
@@ -187,6 +187,7 @@ freq = cv2.getTickFrequency()
 videostream = VideoStream(resolution=(imW,imH),framerate=30).start()
 time.sleep(1)
 
+cnt = 0
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
 while True:
 
@@ -232,9 +233,13 @@ while True:
             object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
             if(object_name in USELABEL):
                 print(object_name)
+                #seb : opencv는 x,y축 바껴서 나옴(삼성 그래프 문제같이...생각합시다)
+                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
 
+                
                 if(object_name =="traffic light"):
-                    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) 
+                    hsv = frame[ymin:ymax, xmin:xmax].copy()
+                    hsv = cv2.cvtColor(hsv, cv2.COLOR_BGR2HSV) 
                     maskRED = cv2.inRange(hsv, LOWER_RED, UPPER_RED)
                     maskGREEN = cv2.inRange(hsv, LOWER_GREEN, UPPER_GREEN)
                     maskBLUE = cv2.inRange(hsv, LOWER_BLUE, UPPER_BLUE)
@@ -256,8 +261,16 @@ while True:
                         color = "blue"
                     
                     object_name = object_name +":"+ color
-                #seb : opencv는 x,y축 바껴서 나옴(삼성 그래프 문제같이...생각합시다)
-                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+                    #cv2.imshow('RED', maskRED)
+                    #cv2.imshow('BLUE', maskBLUE)
+                    #cv2.imshow('GREEN', maskGREEN)
+
+                    cv2.imwrite("RED/RED" + str(cnt) + ".png", maskRED)
+                    cv2.imwrite("BLUE/BLUE" + str(cnt) + ".png", maskBLUE)
+                    cv2.imwrite("GREEN/GREEN" + str(cnt) + ".png", maskGREEN)
+
+                    cnt+=1
+
                 label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
                 labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
                 label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
