@@ -17,7 +17,7 @@ firebase_admin.initialize_app(cred,{'databaseURL' : "https://tram-e65c4-default-
 ref = db.reference("stationCongestion/") #path
 
 
-address = ('localhost',7000)
+address = ('localhost',5000)
 listener = Listener(address,authkey=b"pi")
 conn = listener.accept()
 print("socket connection:",listener.last_accepted)

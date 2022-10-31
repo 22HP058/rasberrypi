@@ -27,7 +27,7 @@ import collections
 
 #seb : plus multiprocessing (to firebase send)
 from multiprocessing.connection import Client
-address = ('localhost',7000)
+address = ('localhost',5000)
 conn = Client(address,authkey=b"pi")
 
 previous_peopleCnt = 0
