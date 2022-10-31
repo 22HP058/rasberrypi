@@ -1,12 +1,20 @@
+import time
+from datetime import datetime
+
 from multiprocessing.connection import Client
 import threading as th
 
 from bluetooth import *
 import pymysql
+
 from pirc522 import RFID
 import RPi.GPIO as GPIO
+GPIO.setwarnings(False)
 
-import time
+#seb : firebase
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 
 
 
@@ -15,15 +23,17 @@ import time
 address = ('localhost',6000)
 conn = Client(address,authkey=b"pi")
 
-
-
-
-
 #bluetooth
 client_socket=BluetoothSocket( RFCOMM )
 client_socket.connect(("98:D3:51:F9:28:13", 1))
 
 warning_value = {"gas": 400, "fire" : 400,"ultraSound": 500 ,"person": 1}
+
+#firebase
+cred = credentials.Certificate("//home//pi//File//tram-e65c4-firebase-adminsdk-mguas-51f6bc11fd.json")
+firebase_admin.initialize_app(cred,{'databaseURL' : "https://tram-e65c4-default-rtdb.firebaseio.com//"})
+ref_tramPlace = db.reference("tramPlace/") 
+
 
 
 #rfid
@@ -35,7 +45,10 @@ stop_2_rfidId = [203,172,69,28,62]
 stop_3_rfidId = [137,21,253,126,31] 
 
 global station 
-station = 1
+station = 0
+
+
+
 '''----------------function----------------'''
 #DB
 db = pymysql.connect(host='localhost',user='root',password='pi',
@@ -57,7 +70,7 @@ def parsingQuery(all_data):
 def sendQuery(parsingData):
    global station 
    
-
+   #to mysql
    try: 
       valuesList = ['NOW()','NOW()',parsingData["gas"],parsingData["fire"],parsingData["ultraSound"],parsingData["person"],parsingData["humidity"],parsingData["temperature"],str(station)]
       valuesStr = ",".join(valuesList)
@@ -70,9 +83,15 @@ def sendQuery(parsingData):
       cur.execute(q)
 
       db.commit()
+
    except:
       print("!DB ERROR!")
 
+   #toFirebase
+   currentTime = datetime.now() 
+   parsingCurrentTime = currentTime.strftime('%Y-%m-%d %H:%M:%S')
+   humiTempGas = str(parsingData["humidity"])+","+str(parsingData["temperature"])+","+str(parsingData["gas"])
+   #ref_tramInform.update({parsingCurrentTime:humiTempGas})      #seb! : 추후에 열기
 
 
 
@@ -96,26 +115,25 @@ def thread_bluetooth():
 
          elif(list_data[i]=="f"):
             if(len(save_data)>0 and flag == 1):
-               print("<------DB : (save) SENSOR data ------>")
+               print("<------DB+FIREBASE : (save) SENSOR data ------>")
                bluetooth_data = "".join(save_data)
                parsing_data = parsingQuery(bluetooth_data)
                print(parsing_data)
 
                sendQuery(parsing_data)
 
-               #gas, fire, ultraSound , person,trafficLight,obstacle
-               sendToTram = [0,0,0,0,0,0]
+               #자율 주행 판단
+               #fire,ultraSound,person(sensor),trafficLight(camera),obstacle(camera)
+               sendToTram = [0,0,0,0,0]
                
 
                print("<------TRIGGER : from arduino(SENSOR) to RASPI------>")
-               if(int(parsing_data["gas"]) > int(warning_value["gas"])):
-                  sendToTram[0] = 1
                if(int(parsing_data["fire"]) < int(warning_value["fire"])):
-                  sendToTram[1] = 1
+                  sendToTram[0] = 1
                if(int(parsing_data["ultraSound"]) < int(warning_value["ultraSound"])):
-                  sendToTram[2] = 1
+                  sendToTram[1] = 1
                if(int(parsing_data["person"]) == int(warning_value["person"])):
-                  sendToTram[3] = 1
+                  sendToTram[2] = 1
                
                print(sendToTram)
                conn.send(sendToTram)
@@ -138,23 +156,39 @@ def thread_rfid():
 
       rfid.wait_for_tag
       error,tag_type = rfid.request()
-      
-      #print("error:",error,end="\t")
-      #print("tag_type:",tag_type)
+
 
       if not error : 
          error,uid  = rfid.anticoll()
 
-         if(uid == stop_1_rfidId):
-               station = 1
-               print(station,"번 정류장")
-         if(uid == stop_2_rfidId):
-               station = 2
-               print(station,"번 정류장")
-         if(uid == stop_3_rfidId):
-               station = 3
-               print(station,"번 정류장")
+         #seb : time 
+         currentTime = datetime.now() 
+         parsingCurrentTime = currentTime.strftime('%Y-%m-%d %H:%M:%S')
 
+         if(uid == stop_1_rfidId):
+            flag = 1
+            if(flag != station):
+               print("<------TRAM SPACE CHANGE-> SEND FIREBASE DB------>")
+               print("1번 정류장")
+               station = flag
+               ref_tramPlace.update({parsingCurrentTime:1})
+               print("<------------------------------------------------>")
+         if(uid == stop_2_rfidId):
+            flag = 2
+            if(flag != station):
+               print("<------TRAM SPACE CHANGE-> SEND FIREBASE DB------>")
+               print("2번 정류장")
+               station = flag
+               ref_tramPlace.update({parsingCurrentTime:2})
+               print("<------------------------------------------------>")
+         if(uid == stop_3_rfidId):
+            flag = 3
+            if(flag != station):
+               print("<------TRAM SPACE CHANGE-> SEND FIREBASE DB------>")
+               print("3번 정류장")
+               station = flag
+               ref_tramPlace.update({parsingCurrentTime:3})
+               print("<------------------------------------------------>")
 
 
 
