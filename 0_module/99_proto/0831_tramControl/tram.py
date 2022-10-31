@@ -45,29 +45,30 @@ def parsingQuery(all_data):
 
 def sendQuery(parsingData):
    global station 
-   
-   valuesList = ['NOW()','NOW()',parsingData["rcCanDrive"],parsingData["lineSensor_L"],parsingData["lineSensor_R"],parsingData["gasTrigger"],parsingData["fireTrigger"],parsingData["ultraSoundTrigger"],parsingData["personTrigger"],parsingData["trafficLightTrigger"],parsingData["obstacleTrigger"]]
-   valuesStr = ",".join(valuesList)
-   #print("Query value:",valuesStr)
+   try:
+    valuesList = ['NOW()','NOW()',parsingData["rcCanDrive"],parsingData["lineSensor_L"],parsingData["lineSensor_R"],parsingData["gasTrigger"],parsingData["fireTrigger"],parsingData["ultraSoundTrigger"],parsingData["personTrigger"],parsingData["trafficLightTrigger"],parsingData["obstacleTrigger"]]
+    valuesStr = ",".join(valuesList)
+    print("Query value:",valuesStr)
 
-   cur = db.cursor()
+    cur = db.cursor()
 
-   q = "INSERT INTO tram (date,time,rcCanDrive,lineSensor_L,lineSensor_R,gasTrigger,fireTrigger,ultraSoundTrigger,personTrigger,trafficLightTrigger,obstacleTrigger) VALUES("+valuesStr+")"
-   print("Query:",q)
-   cur.execute(q)
-
-   db.commit()
+    q = "INSERT INTO tram (date,time,rcCanDrive,lineSensor_L,lineSensor_R,gasTrigger,fireTrigger,ultraSoundTrigger,personTrigger,trafficLightTrigger,obstacleTrigger) VALUES("+valuesStr+")"
+    print("Query:",q)
+    cur.execute(q)
+    db.commit()
+   except:
+      print("!DB ERROR!")
 
 '''----------------thread---------------'''
 #bluetooth 값 쓰기
 def send():
     while True: 
-        print("<------trigger data FROM raspi(sensor) TO tram------>")
+        print("<------TRIGGER : from RASPI to arduino(TRAM)------>")
         msg = conn.recv()
         msg.insert(0,"s")
         msg.append("f")
         parsingMsg = ",".join(map(str, msg))
-        print(parsingMsg)
+        #print(parsingMsg)
         client_socket.send(parsingMsg)
 
 
@@ -93,7 +94,7 @@ def receive():
             elif(list_data[i]=="f"):
                 #print("finish")
                 if(len(save_data)>0 and flag == 1):
-                    print("<------tram data SAVE DB------>")
+                    print("<------DB : (save) TRAM data ------>")
                     bluetooth_data = "".join(save_data)
                     parsing_data = parsingQuery(bluetooth_data)
                     print(parsing_data)

@@ -57,18 +57,21 @@ def parsingQuery(all_data):
 def sendQuery(parsingData):
    global station 
    
-   valuesList = ['NOW()','NOW()',parsingData["gas"],parsingData["fire"],parsingData["ultraSound"],parsingData["person"],parsingData["humidity"],parsingData["temperature"],str(station)]
-   valuesStr = ",".join(valuesList)
-   #print("Query value:",valuesStr)
 
-   cur = db.cursor()
+   try: 
+      valuesList = ['NOW()','NOW()',parsingData["gas"],parsingData["fire"],parsingData["ultraSound"],parsingData["person"],parsingData["humidity"],parsingData["temperature"],str(station)]
+      valuesStr = ",".join(valuesList)
+      #print("Query value:",valuesStr)
 
-   q = "INSERT INTO sensor (date,time,gas,fire,ultraSound,person,humidity,temperature,station) VALUES("+valuesStr+")"
-   print("Query:",q)
-   cur.execute(q)
+      cur = db.cursor()
 
-   db.commit()
+      q = "INSERT INTO sensor (date,time,gas,fire,ultraSound,person,humidity,temperature,station) VALUES("+valuesStr+")"
+      print("Query:",q)
+      cur.execute(q)
 
+      db.commit()
+   except:
+      print("!DB ERROR!")
 
 
 
@@ -93,7 +96,7 @@ def thread_bluetooth():
 
          elif(list_data[i]=="f"):
             if(len(save_data)>0 and flag == 1):
-               print("<------sensor data SAVE DB------>")
+               print("<------DB : (save) SENSOR data ------>")
                bluetooth_data = "".join(save_data)
                parsing_data = parsingQuery(bluetooth_data)
                print(parsing_data)
@@ -104,7 +107,7 @@ def thread_bluetooth():
                sendToTram = [0,0,0,0,0,0]
                
 
-               print("<------trigger data TO raspi(tram)------>")
+               print("<------TRIGGER : from arduino(SENSOR) to RASPI------>")
                if(int(parsing_data["gas"]) > int(warning_value["gas"])):
                   sendToTram[0] = 1
                if(int(parsing_data["fire"]) < int(warning_value["fire"])):
