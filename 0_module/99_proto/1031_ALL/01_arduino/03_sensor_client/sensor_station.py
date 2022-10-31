@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 
 from multiprocessing.connection import Client
+from multiprocessing.connection import Listener
 import threading as th
 
 from bluetooth import *
@@ -22,6 +23,12 @@ from firebase_admin import db
 #socket
 address = ('localhost',6000)
 conn = Client(address,authkey=b"pi")
+
+#socket(from camera)
+address2 = ('localhost',7000)
+listener2 = Listener(address2,authkey=b"pi")
+conn2 = listener2.accept()
+
 
 #bluetooth
 client_socket=BluetoothSocket( RFCOMM )
@@ -48,8 +55,27 @@ global station
 station = 0
 
 
-
+global peopleDetect
+peopleDetect = 0
+global trafficDetect
+trafficDetect = 0
 '''----------------function----------------'''
+
+#socket from camera
+def thread_fromCamera():
+   global peopleDetect
+   global trafficDetect
+   while True: 
+      print("<------TRIGGER : from RASPI(CAMERA) to RASPI------>")
+      msg = conn2.recv()
+      print(msg)
+      if(msg[0] == 1) :
+         peopleDetect=msg[1]
+      elif(msg[0] == 2 ):
+         trafficDetect=msg[1]
+        
+
+
 #DB
 db = pymysql.connect(host='localhost',user='root',password='pi',
 db='tram',charset='utf8')
@@ -98,6 +124,8 @@ def sendQuery(parsingData):
 '''----------------thread---------------'''
 #thread1
 def thread_bluetooth():
+   global peopleDetect
+   global trafficDetect
    flag = -1
    save_data = []
    while True:
@@ -134,6 +162,8 @@ def thread_bluetooth():
                   sendToTram[1] = 1
                if(int(parsing_data["person"]) == int(warning_value["person"])):
                   sendToTram[2] = 1
+               sendToTram[3] = peopleDetect
+               sendToTram[4] = trafficDetect
                
                print(sendToTram)
                conn.send(sendToTram)
@@ -195,8 +225,10 @@ def thread_rfid():
 
 thread1 = th.Thread(target = thread_bluetooth)
 thread2 = th.Thread(target = thread_rfid)
+thread3 = th.Thread(target = thread_fromCamera)
 
       
 thread1.start()
 thread2.start()
+thread3.start()
 

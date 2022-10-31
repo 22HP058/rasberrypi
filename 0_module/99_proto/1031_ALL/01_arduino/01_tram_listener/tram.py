@@ -21,6 +21,8 @@ conn = listener.accept()
 
 print("socket connection:",listener.last_accepted)
 
+
+
 #bluetooth
 client_socket=BluetoothSocket( RFCOMM )
 client_socket.connect(("98:DA:60:03:D3:25", 1))

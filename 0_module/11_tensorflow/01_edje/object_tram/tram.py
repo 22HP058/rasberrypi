@@ -21,10 +21,15 @@ import numpy as np
 import sys
 import time
 from threading import Thread
+from multiprocessing.connection import Client
 import importlib.util
 
 import collections 
 
+
+#socket
+address = ('localhost',7000)
+conn = Client(address,authkey=b"pi")
 
 #seb:use label check
 USELABEL = ["person","traffic light"]  
@@ -216,7 +221,9 @@ while True:
     boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
     classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
     scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
-
+    
+    isPerson = 0
+    isTraffic = 0
     # Loop over all detections and draw detection box if confidence is above minimum threshold
     for i in range(len(scores)):
         if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
@@ -228,7 +235,6 @@ while True:
             ymax = int(min(imH,(boxes[i][2] * imH)))
             xmax = int(min(imW,(boxes[i][3] * imW)))
             
-
             # Draw label
             object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
             if(object_name in USELABEL):
@@ -238,6 +244,7 @@ while True:
 
                 
                 if(object_name =="traffic light"):
+                    isTraffic = 1
                     hsv = frame[ymin:ymax, xmin:xmax].copy()
                     hsv = cv2.cvtColor(hsv, cv2.COLOR_BGR2HSV) 
                     maskRED = cv2.inRange(hsv, LOWER_RED, UPPER_RED)
@@ -270,6 +277,8 @@ while True:
                     cv2.imwrite("GREEN/GREEN" + str(cnt) + ".png", maskGREEN)
 
                     cnt+=1
+                elif(object_name =="person"):
+                    isPerson = 1
 
                 label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
                 labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
@@ -277,6 +286,9 @@ while True:
                 cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
                 cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
+
+    conn.send([1,isPerson])
+    conn.send([2,isTraffic])
     # Draw framerate in corner of frame
     #cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
